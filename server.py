@@ -83,8 +83,6 @@ def find_corners(points, img_dim):
     """
     points = list(points)
     center_point = closest_point(points, (img_dim[0] / 2, img_dim[1] / 2))
-    print(center_point)
-    print(points)
     points.remove(center_point)    
     center_adjacent_point = closest_point(points, center_point)
     points.append(center_point)
@@ -157,18 +155,18 @@ def find_board(fname):
     new_img = four_point_transform(img, points)
 
     return new_img
-'''
+
 def split_board(img):
     """
     Given a board image, returns an array of 64 smaller images.
     """
     arr = []
-    sq_len = img.shape[0] / 8
+    sq_len = int(img.shape[0] / 8)
     for i in range(8):
         for j in range(8):
             arr.append(img[i * sq_len : (i + 1) * sq_len, j * sq_len : (j + 1) * sq_len])
     return arr
-
+'''
 def shrink_blanks(fen):
     if '_' not in fen:
         return fen
@@ -185,7 +183,8 @@ def shrink_blanks(fen):
     if blanks != 0:
         new_fen += str(blanks)
     return new_fen
-
+'''
+'''
 def get_fen(arr):
     fen = ''
     for sq in arr:
@@ -199,7 +198,8 @@ def get_fen(arr):
     fens = map(shrink_blanks, fens)
     fen = '/'.join(fens)
     return fen
-
+'''
+'''
 def get_square_to_pieces_dict(prob_matrix):
     d = {}
     for i in range(len(prob_matrix)):

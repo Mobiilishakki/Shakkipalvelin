@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 
-from server import auto_canny, hor_vert_lines, intersections, cluster, find_corners, four_point_transform
+from server import auto_canny, hor_vert_lines, intersections, cluster, find_corners, four_point_transform, split_board
 
 url = 'shakki1.jpg'
 
@@ -46,6 +46,9 @@ points = find_corners(points, (img_shape[1], img_shape[0]))
 new_img = four_point_transform(img, points)
 
 cv2.imwrite('new_chess1.jpg', new_img)
+
+arr = split_board(new_img)
+cv2.imwrite('part.jpg', arr[0])
 
 #cv2.imshow('test', new_img)
 #cv2.waitKey(0)
