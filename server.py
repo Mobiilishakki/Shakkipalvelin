@@ -71,15 +71,21 @@ def closest_point(points, loc):
     """
     Returns the list of points, sorted by distance from loc.
     """
-    dists = np.array(map(partial(spatial.distance.euclidean, loc), points))
-    return points[dists.argmin()]
+    points = list(points)
+    m = map(partial(spatial.distance.euclidean, loc), points)
+    dists = np.array(list(m))
+    res = dists.argmin()
+    return points[res]
 
 def find_corners(points, img_dim):
     """
     Given a list of points, returns a list containing the four corner points.
     """
+    points = list(points)
     center_point = closest_point(points, (img_dim[0] / 2, img_dim[1] / 2))
-    points.remove(center_point)
+    print(center_point)
+    print(points)
+    points.remove(center_point)    
     center_adjacent_point = closest_point(points, center_point)
     points.append(center_point)
     grid_dist = spatial.distance.euclidean(np.array(center_point), np.array(center_adjacent_point))
@@ -112,9 +118,9 @@ def find_board(fname):
     start = time()
     img = cv2.imdecode(fname, 1)
     if img is None:
-        print 'no image'
+        print('no image')
         return None
-    print img.shape
+    print(img.shape)
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.blur(gray, (3, 3))
@@ -122,13 +128,13 @@ def find_board(fname):
     # Canny edge detection
     edges = auto_canny(gray)
     if np.count_nonzero(edges) / float(gray.shape[0] * gray.shape[1]) > 0.015:
-        print 'too many edges'
+        print('too many edges')
         return None
 
     # Hough line detection
     lines = cv2.HoughLines(edges, 1, np.pi/180, 200)
     if lines is None:
-        print 'no lines'
+        print('no lines')
         return None
 
     lines = np.reshape(lines, (-1, 2))
@@ -136,7 +142,7 @@ def find_board(fname):
     # Compute intersection points
     h, v = hor_vert_lines(lines)
     if len(h) < 9 or len(v) < 9:
-        print 'too few lines'
+        print('too few lines')
         return None
     points = intersections(h, v)
     
