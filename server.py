@@ -25,6 +25,7 @@ def auto_canny(image, sigma=0.33):
     # return the edged image
     return edged
 
+
 def hor_vert_lines(lines):
     """
     A line is given by rho and theta. Given a list of lines, returns a list of
@@ -38,6 +39,7 @@ def hor_vert_lines(lines):
         else:
             h.append([distance, angle])
     return h, v
+
 
 def intersections(h, v):
     """
@@ -53,6 +55,7 @@ def intersections(h, v):
             points.append(point)
     return np.array(points)
 
+
 def cluster(points, max_dist=50):
     """
     Given a list of points, returns a list of cluster centers.
@@ -67,6 +70,7 @@ def cluster(points, max_dist=50):
     clusters = map(lambda arr: (np.mean(np.array(arr)[:,0]), np.mean(np.array(arr)[:,1])), clusters)
     return clusters
 
+
 def closest_point(points, loc):
     """
     Returns the list of points, sorted by distance from loc.
@@ -76,6 +80,7 @@ def closest_point(points, loc):
     dists = np.array(list(m))
     res = dists.argmin()
     return points[res]
+
 
 def find_corners(points, img_dim):
     """
@@ -103,11 +108,13 @@ def find_corners(points, img_dim):
                 break
     return board_corners
 
+
 def four_point_transform(img, points, square_length=1816):
     pts1 = np.float32(points)
     pts2 = np.float32([[0, 0], [0, square_length], [square_length, square_length], [square_length, 0]])
     M = cv2.getPerspectiveTransform(pts1, pts2)
     return cv2.warpPerspective(img, M, (square_length, square_length))
+
 
 def find_board(fname):
     """
@@ -156,6 +163,7 @@ def find_board(fname):
 
     return new_img
 
+
 def split_board(img):
     """
     Given a board image, returns an array of 64 smaller images.
@@ -166,6 +174,8 @@ def split_board(img):
         for j in range(8):
             arr.append(img[i * sq_len : (i + 1) * sq_len, j * sq_len : (j + 1) * sq_len])
     return arr
+
+
 '''
 def shrink_blanks(fen):
     if '_' not in fen:
