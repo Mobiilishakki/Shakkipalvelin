@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import statistics
+import math
 
 class BoardProcessor:
     '''
@@ -103,8 +105,24 @@ class BoardProcessor:
             tmpMat = self.mat.copy()
             debugImage = drawLinesToMat(tmpMat, vLines)
             cv2.imwrite('images/debug/vLines.jpg', debugImage)
-
-
+        # remove lines that can not be actual grid lines (angle differs too much)
+        hLines = removeWeirdLines(hLines)
+        if self.debug:
+            print("NUMBER OF HORIZONTAL LINES AFTER REMOVING WEIRD LINES: " + str(len(hLines)))
+            tmpMat = self.mat.copy()
+            debugImage = drawLinesToMat(tmpMat, hLines)
+            cv2.imwrite('images/debug/hNoWeirdLines.jpg', debugImage)
+        vLines = removeWeirdLines(vLines)
+        if self.debug:
+            print("NUMBER OF VERTICAL LINES AFTER REMOVING WEIRD LINES: " + str(len(vLines)))
+            tmpMat = self.mat.copy()
+            debugImage = drawLinesToMat(tmpMat, vLines)
+            cv2.imwrite('images/debug/vNoWeirdLines.jpg', debugImage)
+        # check that enough lines were detected
+        if len(hLines) < 9 or len(vLines) < 9:
+            self.failed = True
+            self.errorMessage = "Too few lines!"
+        
 
 
 
@@ -193,3 +211,22 @@ def drawLinesToMat(mat, lines):
         y2 = int(y0 - 10000*(a))
         cv2.line(mat, (x1, y1), (x2, y2), (0, 0, 255), 2)
     return mat
+
+def removeWeirdLines(lines, delta=math.pi/8):
+    '''
+    Takes a list of lines as input and calculates the median angle.
+    Removes lines that differ too much from median value.
+    '''
+    # calculate median angle of lines
+    angles = []
+    for distance, angle in lines:
+        angles.append(angle)
+    medianAngle = statistics.median(angles)
+    # remove lines that differ too much
+    resultList = []
+    for line in lines:
+        distance, angle = line
+        if abs(angle-medianAngle) <= delta:
+            resultList.append(line)
+    return resultList
+    
