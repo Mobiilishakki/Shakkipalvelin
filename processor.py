@@ -1,8 +1,13 @@
 import cv2
 import numpy as np
+<<<<<<< HEAD
 import math
 import statistics
 import heapq
+=======
+import statistics
+import math
+>>>>>>> 80b10f053b3b75cccdef33d044d71b21711bb119
 
 ############################################################################################################
 ############################################################################################################
@@ -173,6 +178,7 @@ class BoardProcessor:
             print("DEBUG: NUMBER OF HORIZONTAL LINEGROUPS FOUND: " + str(len(h_linegroups)))
         v_linegroups = vertical_linegroups(h_inter_points)
         if self.debug:
+<<<<<<< HEAD
             print("DEBUG: NUMBER OF VERTICAL LINEGROUPS FOUND: " + str(len(v_linegroups)))
 
         # TODO: Remove lines that cross with lines from other linegroups
@@ -182,6 +188,30 @@ class BoardProcessor:
         # TODO: Calculate intersection points for horizontal and vertical lines
 
         # TODO: Pick 4 corner points by using horizontal and vertical intersection points
+=======
+            print("NUMBER OF VERTICAL LINES AFTER MERGING: " + str(len(vLines)))
+            tmpMat = self.mat.copy()
+            debugImage = drawLinesToMat(tmpMat, vLines)
+            cv2.imwrite('images/debug/vLines.jpg', debugImage)
+        # remove lines that can not be actual grid lines (angle differs too much)
+        hLines = removeWeirdLines(hLines)
+        if self.debug:
+            print("NUMBER OF HORIZONTAL LINES AFTER REMOVING WEIRD LINES: " + str(len(hLines)))
+            tmpMat = self.mat.copy()
+            debugImage = drawLinesToMat(tmpMat, hLines)
+            cv2.imwrite('images/debug/hNoWeirdLines.jpg', debugImage)
+        vLines = removeWeirdLines(vLines)
+        if self.debug:
+            print("NUMBER OF VERTICAL LINES AFTER REMOVING WEIRD LINES: " + str(len(vLines)))
+            tmpMat = self.mat.copy()
+            debugImage = drawLinesToMat(tmpMat, vLines)
+            cv2.imwrite('images/debug/vNoWeirdLines.jpg', debugImage)
+        # check that enough lines were detected
+        if len(hLines) < 9 or len(vLines) < 9:
+            self.failed = True
+            self.errorMessage = "Too few lines!"
+        
+>>>>>>> 80b10f053b3b75cccdef33d044d71b21711bb119
 
         # TODO: do perspective transformation and finally save the image
 
@@ -321,6 +351,7 @@ def horizontal_intersection_points(lines, image_width, image_height):
     p1 = (0, image_height/2)
     p2 = (image_width, image_height/2)
     for line in lines:
+<<<<<<< HEAD
         p3 = line.get_start_point()
         p4 = line.get_end_point()
         a1 = p2[1] - p1[1]
@@ -431,3 +462,35 @@ def remove_crossing_linegroup_lines(linegroups, image_width, image_height):
     it groups average theta will be removed.
     '''
     pass
+=======
+        rho, theta = line
+        a = np.cos(theta)
+        b = np.sin(theta)
+        x0 = a*rho
+        y0 = b*rho
+        x1 = int(x0 + 10000*(-b))
+        y1 = int(y0 + 10000*(a))
+        x2 = int(x0 - 10000*(-b))
+        y2 = int(y0 - 10000*(a))
+        cv2.line(mat, (x1, y1), (x2, y2), (0, 0, 255), 2)
+    return mat
+
+def removeWeirdLines(lines, delta=math.pi/8):
+    '''
+    Takes a list of lines as input and calculates the median angle.
+    Removes lines that differ too much from median value.
+    '''
+    # calculate median angle of lines
+    angles = []
+    for distance, angle in lines:
+        angles.append(angle)
+    medianAngle = statistics.median(angles)
+    # remove lines that differ too much
+    resultList = []
+    for line in lines:
+        distance, angle = line
+        if abs(angle-medianAngle) <= delta:
+            resultList.append(line)
+    return resultList
+    
+>>>>>>> 80b10f053b3b75cccdef33d044d71b21711bb119
