@@ -2,11 +2,11 @@ import sys
 import cv2
 import numpy as np
 
-from server import auto_canny, hor_vert_lines, intersections, cluster, find_corners, four_point_transform, split_board
+from server import auto_canny, hor_vert_lines, intersections, cluster, find_corners, four_point_transform, split_board, find_board
 from processor import BoardProcessor
 
 # load input image
-url = 'images/shakki1.jpg'
+url = 'images/shakki4.jpg'
 with open(url, 'rb') as file:
     test = np.asarray(bytearray(file.read()))
 
@@ -17,3 +17,6 @@ img = cv2.imdecode(test, 1)
 processor = BoardProcessor(img, debug=True)
 processor.process()
 
+# check if errors
+if processor.processed and processor.failed:
+    print(processor.error_msg)

@@ -1,13 +1,8 @@
 import cv2
 import numpy as np
-<<<<<<< HEAD
 import math
 import statistics
 import heapq
-=======
-import statistics
-import math
->>>>>>> 80b10f053b3b75cccdef33d044d71b21711bb119
 
 ############################################################################################################
 ############################################################################################################
@@ -67,6 +62,13 @@ class Linegroup:
     def __init__(self):
         self.lines = []
 
+    def getMedianTheta(self):
+        '''
+        Returns median angle of lines in linegroup.
+        '''
+        thetas = list(map(lambda line: line.theta, self.lines))
+        return statistics.median(thetas)
+
 
 ############################################################################################################
 ############################################################################################################
@@ -106,6 +108,11 @@ class BoardProcessor:
         self.processed = True
         self.failed = False
         self.error_msg = None
+
+        # print image information for debugging
+        if self.debug:
+            print("DEBUG: IMAGE WIDTH: " + str(self.mat.shape[1]))
+            print("DEBUG: IMAGE HEIGHT: " + str(self.mat.shape[0]))
 
         # convert mat-image to gray scale
         gray = convert_to_grayscale(self.mat)
@@ -158,10 +165,10 @@ class BoardProcessor:
             return
 
         # calculate intersection points for each line and vertical image divider line
-        v_inter_points = vertical_intersection_points(h_lines, self.mat.shape[0], self.mat.shape[1])
+        v_inter_points = vertical_intersection_points(h_lines, self.mat.shape[1], self.mat.shape[0])
         if self.debug:
             print("DEBUG: NUMBER OF INTERSECTION POINTS WITH VERTICAL DIVIDER: " + str(len(v_inter_points)))
-        h_inter_points = horizontal_intersection_points(v_lines, self.mat.shape[0], self.mat.shape[1])
+        h_inter_points = horizontal_intersection_points(v_lines, self.mat.shape[1], self.mat.shape[0])
         if self.debug:
             print("DEBUG: NUMBER OF INTERSECTION POINTS WITH HORIZONTAL DIVIDER: " + str(len(h_inter_points)))
         
@@ -178,42 +185,56 @@ class BoardProcessor:
             print("DEBUG: NUMBER OF HORIZONTAL LINEGROUPS FOUND: " + str(len(h_linegroups)))
         v_linegroups = vertical_linegroups(h_inter_points)
         if self.debug:
-<<<<<<< HEAD
             print("DEBUG: NUMBER OF VERTICAL LINEGROUPS FOUND: " + str(len(v_linegroups)))
 
-        # TODO: Remove lines that cross with lines from other linegroups
-        
-        # TODO: Remove outermost lines --> if threshold values in limits
-
-        # TODO: Calculate intersection points for horizontal and vertical lines
-
-        # TODO: Pick 4 corner points by using horizontal and vertical intersection points
-=======
-            print("NUMBER OF VERTICAL LINES AFTER MERGING: " + str(len(vLines)))
-            tmpMat = self.mat.copy()
-            debugImage = drawLinesToMat(tmpMat, vLines)
-            cv2.imwrite('images/debug/vLines.jpg', debugImage)
-        # remove lines that can not be actual grid lines (angle differs too much)
-        hLines = removeWeirdLines(hLines)
+        # Remove lines that cross with lines from other linegroups
+        h_linegroups = remove_crossing_linegroup_lines(h_linegroups, self.mat.shape[1], self.mat.shape[0])
         if self.debug:
-            print("NUMBER OF HORIZONTAL LINES AFTER REMOVING WEIRD LINES: " + str(len(hLines)))
-            tmpMat = self.mat.copy()
-            debugImage = drawLinesToMat(tmpMat, hLines)
-            cv2.imwrite('images/debug/hNoWeirdLines.jpg', debugImage)
-        vLines = removeWeirdLines(vLines)
+            print("DEBUG: REMOVED CROSSING LINES FROM HORIZONTAL LINEGROUPS")
+            tmp_mat = self.mat.copy()
+            debug_image = draw_lines_to_mat(tmp_mat, lines_from_linegroups(h_linegroups))
+            cv2.imwrite('images/debug/hLinesCrossing.jpg', debug_image)
+        v_linegroups = remove_crossing_linegroup_lines(v_linegroups, self.mat.shape[1], self.mat.shape[0])
         if self.debug:
-            print("NUMBER OF VERTICAL LINES AFTER REMOVING WEIRD LINES: " + str(len(vLines)))
-            tmpMat = self.mat.copy()
-            debugImage = drawLinesToMat(tmpMat, vLines)
-            cv2.imwrite('images/debug/vNoWeirdLines.jpg', debugImage)
-        # check that enough lines were detected
-        if len(hLines) < 9 or len(vLines) < 9:
-            self.failed = True
-            self.errorMessage = "Too few lines!"
-        
->>>>>>> 80b10f053b3b75cccdef33d044d71b21711bb119
+            print("DEBUG: REMOVED CROSSING LINES FROM VERTICAL LINEGROUPS")
+            tmp_mat = self.mat.copy()
+            debug_image = draw_lines_to_mat(tmp_mat, lines_from_linegroups(v_linegroups))
+            cv2.imwrite('images/debug/vLinesCrossing.jpg', debug_image)
 
-        # TODO: do perspective transformation and finally save the image
+        # Remove outermost lines --> if threshold values in limits
+        h_linegroups = remove_outermost_lines(h_linegroups)
+        if self.debug:
+            print("DEBUG: REMOVED OUTERMOST LINES FROM HORIZONTAL LINES")
+            tmp_mat = self.mat.copy()
+            debug_image = draw_lines_to_mat(tmp_mat, lines_from_linegroups(h_linegroups))
+            cv2.imwrite('images/debug/hLinesOuter.jpg', debug_image)
+        v_linegroups = remove_outermost_lines(v_linegroups)
+        if self.debug:
+            print("DEBUG: REMOVED OUTERMOST LINES FROM VERTICAL LINES")
+            tmp_mat = self.mat.copy()
+            debug_image = draw_lines_to_mat(tmp_mat, lines_from_linegroups(v_linegroups))
+            cv2.imwrite('images/debug/vLinesOuter.jpg', debug_image)
+
+        # Calculate intersection points for horizontal and vertical lines
+        h_lines = lines_from_linegroups(h_linegroups)
+        v_lines = lines_from_linegroups(v_linegroups)
+        intersection_points = hor_vert_intersection_points(h_lines, v_lines, self.mat.shape[1], self.mat.shape[0])
+        if self.debug:
+            print("DEBUG: NUMBER OF INTERSECTION POINTS BETWEEN HORIZONTAL AND VERTICAL LINES: " + str(len(intersection_points)))
+
+        # Pick 4 corner points by using horizontal and vertical intersection points
+        corner_points = four_corner_points(intersection_points, h_linegroups, v_linegroups)
+        if self.debug:
+            print("DEBUG: NUMBER OF CORNER POINTS FOUND: " + str(len(corner_points)))
+            for point in corner_points:
+                print(point)
+        
+        # Do perspective transformation and finally save the image
+        self.mat = four_point_transform(self.mat, corner_points)
+        if self.debug:
+            print("DEBUG: FOUR CORNER TRANSFORM COMPLETED")
+            tmp_mat = self.mat.copy()
+            cv2.imwrite('images/debug/perspective.jpg', tmp_mat)
 
 
 ############################################################################################################
@@ -351,7 +372,6 @@ def horizontal_intersection_points(lines, image_width, image_height):
     p1 = (0, image_height/2)
     p2 = (image_width, image_height/2)
     for line in lines:
-<<<<<<< HEAD
         p3 = line.get_start_point()
         p4 = line.get_end_point()
         a1 = p2[1] - p1[1]
@@ -399,15 +419,15 @@ def horizontal_linegroups(points):
     # group lines by using the "sophisticated" threshold value
     linegroups = []
     lg = Linegroup()
-    for i in range(len(points) - 1):
-        lg.lines.append(point1.line1)
+    for i in range(len(points)-1):
         point1 = points[i]
         point2 = points[i+1]
+        lg.lines.append(point1.line1)
         d = abs(point1.y - point2.y)
         if d > threshold:   # distance between points too big
             linegroups.append(lg)
             lg = Linegroup()    # create new linegroup
-        if i == len(points) - 2:
+        elif i == len(points) - 2:
             lg.lines.append(point2.line1)
             linegroups.append(lg)
     return linegroups
@@ -443,14 +463,14 @@ def vertical_linegroups(points):
     linegroups = []
     lg = Linegroup()
     for i in range(len(points) - 1):
-        lg.lines.append(point1.line1)
         point1 = points[i]
         point2 = points[i+1]
+        lg.lines.append(point1.line1)
         d = abs(point1.x - point2.x)
         if d > threshold:   # distance between points too big
             linegroups.append(lg)
             lg = Linegroup()    # create new linegroup
-        if i == len(points) - 2:
+        elif i == len(points) - 2:
             lg.lines.append(point2.line1)
             linegroups.append(lg)
     return linegroups  
@@ -461,36 +481,129 @@ def remove_crossing_linegroup_lines(linegroups, image_width, image_height):
     inside the image borders. If lines intersect, the one with bigger difference from
     it groups average theta will be removed.
     '''
-    pass
-=======
-        rho, theta = line
-        a = np.cos(theta)
-        b = np.sin(theta)
-        x0 = a*rho
-        y0 = b*rho
-        x1 = int(x0 + 10000*(-b))
-        y1 = int(y0 + 10000*(a))
-        x2 = int(x0 - 10000*(-b))
-        y2 = int(y0 - 10000*(a))
-        cv2.line(mat, (x1, y1), (x2, y2), (0, 0, 255), 2)
-    return mat
+    for lg1 in linegroups:
+        if len(lg1.lines) == 0:
+            continue
+        lines1 = lg1.lines.copy()
+        med_theta1 = lg1.getMedianTheta()
+        for lg2 in linegroups:
+            if lg1 == lg2 or len(lg2.lines) == 0:
+                continue
+            med_theta2 = lg2.getMedianTheta()
+            for l1 in lg1.lines:
+                delete = False
+                for l2 in lg2.lines:
+                    if delete == True:
+                        break
+                    ipoint = intersection_point(l1, l2)
+                    if(ipoint != None and ipoint.x >= 0 and ipoint.y >= 0 and ipoint.x <= image_width and ipoint.y <= image_height):
+                        if(abs(med_theta1 - l1.theta) > abs(med_theta2 - l2.theta)):
+                            delete = True
+                if delete == True:
+                    if l1 in lines1:
+                        lines1.remove(l1)
+        lg1.lines = lines1
+    return linegroups 
 
-def removeWeirdLines(lines, delta=math.pi/8):
+def intersection_point(line1, line2):
     '''
-    Takes a list of lines as input and calculates the median angle.
-    Removes lines that differ too much from median value.
+    Calculate intersection point for two lines.
     '''
-    # calculate median angle of lines
-    angles = []
-    for distance, angle in lines:
-        angles.append(angle)
-    medianAngle = statistics.median(angles)
-    # remove lines that differ too much
-    resultList = []
-    for line in lines:
-        distance, angle = line
-        if abs(angle-medianAngle) <= delta:
-            resultList.append(line)
-    return resultList
+    p1 = line1.get_start_point()
+    p2 = line1.get_end_point()
+    p3 = line2.get_start_point()
+    p4 = line2.get_end_point()
+    a1 = p2[1] - p1[1]
+    b1 = p1[0] - p2[0]
+    c1 = a1 * p1[0] + b1 * p1[1]
+    a2 = p4[1] - p3[1]
+    b2 = p3[0] - p4[0]
+    c2 = a2 * p3[0] + b2 * p3[1]
+    det = a1 * b2 - a2 * b1
+
+    if det != 0: # if determinant is not zero --> lines intersect
+        x = (b2 * c1 - b1 * c2) / det
+        y = (a1 * c2 - a2 * c1) / det
+        return IntersectionPoint(x, y, line1, line2)
     
->>>>>>> 80b10f053b3b75cccdef33d044d71b21711bb119
+    # no intersection point
+    return None
+
+def remove_outermost_lines(linegroups):
+    '''
+    Try to remove outermost lines. Chessboard might have other lines besides the grid lines,
+    so this function tries to remove those lines. This function only operates for the
+    first and last linegroup in array.
+    '''
+    # pick first and last linegroups (they should be ordered so it's fine)
+    lg_first = linegroups[0]
+    lg_last = linegroups[len(linegroups) - 1]
+
+    lg_first.lines = [lg_first.lines[-1]]
+    lg_last.lines = [lg_last.lines[0]]
+
+    linegroups[0] = lg_first
+    linegroups[len(linegroups) - 1] = lg_last
+
+    return linegroups
+
+def lines_from_linegroups(linegroups):
+    '''
+    Takes a list of linegroups as input and returns list of lines.
+    '''
+    lines = []
+    for lg in linegroups:
+        lines = lines + lg.lines 
+    return lines
+
+def hor_vert_intersection_points(horizontal_lines, vertical_lines, image_width, image_height):
+    '''
+    Calculate all intersection points for horizontal lines and vertical lines.
+    Intersection points are within image borders.
+    '''
+    print
+    points = []
+    for line1 in horizontal_lines:
+        for line2 in vertical_lines:
+            point = intersection_point(line1, line2)
+            if point != None and point.x >= 0 and point.y >= 0 and point.x <= image_width and point.y <= image_height:
+                points.append(point)
+    return points
+
+def four_corner_points(intersection_points, h_linegroups, v_linegroups):
+    '''
+    Pick four chessboard cornerpoints.
+    '''
+    # pick boarder lines
+    h1 = h_linegroups[0].lines[0]
+    h2 = h_linegroups[-1].lines[0]
+    v1 = v_linegroups[0].lines[0]
+    v2 = v_linegroups[-1].lines[0]
+
+    # corner points must be picked in following order:
+    # top left, top right, bottom left, bottom right
+
+    points = [0, 0, 0, 0]
+
+    # find intersection points
+    for point in intersection_points:
+        if (point.line1 in (h1, v1) and point.line2 in (h1, v1)):
+            points[0] = (point.x, point.y)
+        elif (point.line1 in (h1, v2) and point.line2 in (h1, v2)):
+            points[1] = (point.x, point.y)
+        elif (point.line1 in (h2, v1) and point.line2 in (h2, v1)):
+            points[2] = (point.x, point.y)
+        elif (point.line1 in (h2, v2) and point.line2 in (h2, v2)):
+            points[3] = (point.x, point.y)
+
+    return points
+
+def four_point_transform(img, points, square_length=1816):
+    '''
+    Do perspective transform for image.
+    '''
+
+    pts1 = np.float32(points)
+    pts2 = np.float32([[0, 0], [square_length, 0], [0, square_length], [square_length, square_length]])
+    M = cv2.getPerspectiveTransform(pts1, pts2)
+    return cv2.warpPerspective(img, M, (square_length, square_length))
