@@ -235,6 +235,11 @@ class BoardProcessor:
             print("DEBUG: FOUR CORNER TRANSFORM COMPLETED")
             tmp_mat = self.mat.copy()
             cv2.imwrite('images/debug/perspective.jpg', tmp_mat)
+        
+        # Divide board to parts
+        self.squares = split_board(self.mat)
+        if self.debug:
+            print("DEBUG: BOARD SPLITTED TO 64 PARTS")
 
 
 ############################################################################################################
@@ -607,3 +612,14 @@ def four_point_transform(img, points, square_length=1816):
     pts2 = np.float32([[0, 0], [square_length, 0], [0, square_length], [square_length, square_length]])
     M = cv2.getPerspectiveTransform(pts1, pts2)
     return cv2.warpPerspective(img, M, (square_length, square_length))
+
+def split_board(img):
+    """
+    Given a board image, returns an array of 64 smaller images.
+    """
+    arr = []
+    sq_len = int(img.shape[0] / 8)
+    for i in range(8):
+        for j in range(8):
+            arr.append(img[i * sq_len : (i + 1) * sq_len, j * sq_len : (j + 1) * sq_len])
+    return arr
