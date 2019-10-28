@@ -35,6 +35,11 @@ class Line:
         y0 = b * self.rho
         return (int(round(x0 - 10000 * (-b))), int(round(y0 - 10000 * a)))
 
+    def get_edited_theta(self):
+        if self.theta > math.pi / 4 * 3:
+            return self.theta - math.pi
+        return self.theta
+
 
 ############################################################################################################
 ############################################################################################################
@@ -61,13 +66,6 @@ class Linegroup:
     '''
     def __init__(self):
         self.lines = []
-
-    def getMedianTheta(self):
-        '''
-        Returns median angle of lines in linegroup.
-        '''
-        thetas = list(map(lambda line: line.theta, self.lines))
-        return statistics.median(thetas)
 
 
 ############################################################################################################
@@ -487,27 +485,25 @@ def remove_crossing_linegroup_lines(linegroups, image_width, image_height):
     it groups average theta will be removed.
     '''
     for lg1 in linegroups:
-        if len(lg1.lines) == 0:
+        if len(lg1.lines) == 0: # no lines in linegroup --> some kind of error is possible
             continue
-        lines1 = lg1.lines.copy()
-        med_theta1 = lg1.getMedianTheta()
+        intersections_count = [0] * len(lg1.lines) # array to keep count of intersections for each line
         for lg2 in linegroups:
-            if lg1 == lg2 or len(lg2.lines) == 0:
+            if lg1 == lg2 or len(lg2.lines) == 0: # group itself or error?
                 continue
-            med_theta2 = lg2.getMedianTheta()
-            for l1 in lg1.lines:
-                delete = False
+            for i in range(len(lg1.lines)):
+                l1 = lg1.lines[i]
                 for l2 in lg2.lines:
-                    if delete == True:
-                        break
                     ipoint = intersection_point(l1, l2)
                     if(ipoint != None and ipoint.x >= 0 and ipoint.y >= 0 and ipoint.x <= image_width and ipoint.y <= image_height):
-                        if(abs(med_theta1 - l1.theta) > abs(med_theta2 - l2.theta)):
-                            delete = True
-                if delete == True:
-                    if l1 in lines1:
-                        lines1.remove(l1)
-        lg1.lines = lines1
+                        intersections_count[i] += 1
+                        break
+        # remove lines with more than 1 intersection
+        tmp = []
+        for i in range(len(intersections_count)):
+            if intersections_count[i] <= 1:
+                tmp.append(lg1.lines[i])
+        lg1.lines = tmp
     return linegroups 
 
 def intersection_point(line1, line2):
