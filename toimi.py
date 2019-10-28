@@ -2,7 +2,6 @@ import sys
 import cv2
 import numpy as np
 
-from server import auto_canny, hor_vert_lines, intersections, cluster, find_corners, four_point_transform, split_board, find_board
 from processor import BoardProcessor
 
 # load input image
