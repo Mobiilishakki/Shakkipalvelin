@@ -13,8 +13,8 @@ import skimage
 
 """ CONSTANTS """
 
-CAFFENET_DEPLOY_TXT = '/home/caeh/Desktop/chess-id/deploy.prototxt'
-CAFFENET_MODEL_FILE = '/home/caeh/Desktop/chess-id/finetune_chess_iter_5554.caffemodel'
+CAFFENET_DEPLOY_TXT = 'data/deploy.prototxt'
+CAFFENET_MODEL_FILE = 'data/finetune_chess_iter_5554.caffemodel'
 
 categories = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'empty', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
 BATCH_SIZE = 64
@@ -134,7 +134,7 @@ def find_board(fname):
     print(img.shape)
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cv2.blur(gray, (10, 10))
+    gray = cv2.blur(gray, (7, 7))
     
     # Canny edge detection
     edges = auto_canny(gray)
