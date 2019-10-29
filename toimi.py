@@ -5,7 +5,7 @@ import numpy as np
 from processor import BoardProcessor
 
 # load input image
-url = 'images/shakki1.jpg'
+url = 'images/shakki5.jpg'
 with open(url, 'rb') as file:
     test = np.asarray(bytearray(file.read()))
 

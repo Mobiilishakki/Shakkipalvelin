@@ -310,13 +310,24 @@ def hor_vert_lines(lines):
     A line is given by rho and theta. Given a list of lines, returns a list of
     horizontal lines (theta=90 deg) and a list of vertical lines (theta=0 deg).
     '''
+    #h = []
+    #v = []
+    #for line in lines:
+    #    if line.theta < np.pi / 4 or line.theta > np.pi - np.pi / 4:
+    #        v.append(line)
+    #    else:
+    #        h.append(line)
     h = []
     v = []
     for line in lines:
-        if line.theta < np.pi / 4 or line.theta > np.pi - np.pi / 4:
-            v.append(line)
-        else:
+        if len(h) == 0 and len(v) == 0:
             h.append(line)
+        elif abs(line.theta - h[0].theta) < math.pi/4 or abs(line.theta - math.pi - h[0].theta) < math.pi/4:
+            h.append(line)
+        else:
+            v.append(line)
+    if h[0].theta < np.pi / 4 or h[0].theta > np.pi - np.pi / 4:
+        return v, h
     return h, v
 
 def merge_similar_lines(lines, distance_threshold = 30, angle_threshold = 0.1):
