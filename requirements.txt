@@ -1,6 +1,3 @@
-numpy
-opencv-python
-scipy
 flask
-scikit-image
-protobuf
+torch
+torchvision
