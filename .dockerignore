@@ -1,0 +1,11 @@
+Dockerfile
+LICENSE
+README.md
+__pycache__/
+misc/
+test/
+venv/
+.DS_Store
+.dockerignore
+.git/
+.gitignore
