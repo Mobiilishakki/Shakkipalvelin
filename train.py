@@ -44,13 +44,17 @@ def copy_and_rotate_images(datadir):
         for file in os.listdir(thisdir):
             if (os.fsdecode(file).endswith(".jpg")):
                 PATH = thisdir + "/" + file
+                CUT_PATH = PATH[:-4] # Image path with the ".jpg" suffix emitted
+
+                # Skip if this image has already been rotated before or this image is a rotated clone
+                if os.path.exists(CUT_PATH + "_90.jpg") or CUT_PATH.endswith(("_90", "_180", "_270")):
+                    continue
+
                 img = Image.open(PATH)
 
                 img_90 = img.transpose(Image.ROTATE_90)
                 img_180 = img.transpose(Image.ROTATE_180)
                 img_270 = img.transpose(Image.ROTATE_270)
-
-                CUT_PATH = PATH[:-4]
 
                 img_90.save(CUT_PATH + '_90.jpg')
                 img_180.save(CUT_PATH + '_180.jpg')

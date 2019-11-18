@@ -4,4 +4,4 @@ __pycache__/
 .vscode/
 data/
 .DS_Store
-pytorch_chessmodel_1.pth
+*.pth
