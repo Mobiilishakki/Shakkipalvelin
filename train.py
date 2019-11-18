@@ -1,11 +1,12 @@
 #!/usr/bin/python
 
 import numpy as np
-import torch
+import torch, os
 from torch import nn
 from torch import optim
 import torch.nn.functional as F
 from torchvision import datasets, transforms, models
+from PIL import Image
 
 device = torch.device('cpu')
 model = models.resnet50(pretrained=True)
@@ -13,6 +14,7 @@ model = models.resnet50(pretrained=True)
 data_dir = '/chess'
 
 def load_split_train_test(datadir, valid_size = .2):
+    copy_and_rotate_images(datadir)
     train_transforms = transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor()])
     test_transforms = transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor()])
 
@@ -30,6 +32,30 @@ def load_split_train_test(datadir, valid_size = .2):
     trainloader = torch.utils.data.DataLoader(train_data, sampler=train_sampler, batch_size=64)
     testloader = torch.utils.data.DataLoader(test_data, sampler=test_sampler, batch_size=64)
     return trainloader, testloader
+
+'''
+Creates copies of every .jpg image in the dataset rotated by 90, 180 and 270 degrees.
+A suffix is added to the end of the new files' name.
+'''
+def copy_and_rotate_images(datadir):
+    CATEGORIES = ["black_pawns", "black_knights", "black_rooks", "black_bishops", "black_queens", "black_kings", "white_pawns", "white_knights", "white_rooks", "white_bishops", "white_queens", "white_kings", "empty_tiles"]
+    for cat in range(len(CATEGORIES)):
+        thisdir = datadir + "/" + CATEGORIES[cat]
+        for file in os.listdir(thisdir):
+            if (os.fsdecode(file).endswith(".jpg")):
+                PATH = thisdir + "/" + file
+                img = Image.open(PATH)
+
+                img_90 = img.transpose(Image.ROTATE_90)
+                img_180 = img.transpose(Image.ROTATE_180)
+                img_270 = img.transpose(Image.ROTATE_270)
+
+                CUT_PATH = PATH[:-4]
+
+                img_90.save(CUT_PATH + '_90.jpg')
+                img_180.save(CUT_PATH + '_180.jpg')
+                img_270.save(CUT_PATH + '_270.jpg')
+
 trainloader, testloader = load_split_train_test(data_dir, .2)
 print(trainloader.dataset.classes)
 
