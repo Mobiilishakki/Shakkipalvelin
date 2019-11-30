@@ -1,5 +1,5 @@
 from PIL import Image
-import sys, math, torch
+import sys, math, torch, os
 from torchvision import transforms
 from flask import Flask, request, redirect, url_for
 
@@ -7,12 +7,13 @@ from flask import Flask, request, redirect, url_for
 
 CATEGORIES = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'empty', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'JPG', 'JPEG'])
+OUTPUT_PATH = "output.jpg"
 
 
 """ LOADING """
 
 # Load pre-trained ML model for inference
-model_file = 'pytorch_chessmodel_1.pth'
+model_file = 'pytorch_chessmodel.pth'
 # Currently only CPU is available on server
 device = torch.device('cpu')
 model = torch.load(model_file)
@@ -101,8 +102,10 @@ def upload_file():
     if request.method == 'POST':
         file = request.files['file']
         if file and allowed_file(file.filename):
-            img = Image.open(file)
+            os.system("python3 ./autodetect/main.py detect --input={} --output={}".format(file.filename, OUTPUT_PATH))
+            img = Image.open(OUTPUT_PATH)
             squares = split_board(img)
+            os.remove(OUTPUT_PATH)
             result = []
             for square in squares:
                 result.append(predict_image(square))

@@ -1,3 +1,12 @@
 flask
 torch
 torchvision
+keras
+tensorflow
+scipy
+pyclipper
+numpy
+matplotlib
+h5py
+tables
+sklearn
