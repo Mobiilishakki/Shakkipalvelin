@@ -78,20 +78,20 @@ def slid_clahe(img, limit=2, grid=(3,3), iters=5):
 
 def pSLID(img, thresh=150):
 	"""find all lines using different settings"""
-	print(utils.call("pSLID(img)"))
+	#print(utils.call("pSLID(img)"))
 	segments = []; i = 0
 	for key, arr in enumerate(NC_SLID_CLAHE):
 		tmp = slid_clahe(img, limit=arr[0], grid=arr[1], iters=arr[2])
 		__segments = list(slid_detector(slid_canny(tmp), thresh))
 		segments += __segments; i += 1
-		print("FILTER: {} {} : {}".format(i, arr, len(__segments)))
+		#print("FILTER: {} {} : {}".format(i, arr, len(__segments)))
 		debug.image(slid_canny(tmp)).lines(__segments).save("pslid_F%d" % i)
 	return segments
 
 all_points = []
 def SLID(img, segments):
 	# FIXME: zrobic 2 rodzaje haszowania (katy + pasy [blad - delta])
-	print(utils.call("SLID(img, segments)"))
+	#print(utils.call("SLID(img, segments)"))
 	
 	global all_points; all_points = []
 	pregroup, group, hashmap, raw_lines = [[], []], {}, {}, []
@@ -209,7 +209,7 @@ def SLID(img, segments):
 	return raw_lines
 
 def slid_tendency(raw_lines, s=4): # FIXME: [1.25 -> 2]
-	print(utils.call("slid_tendency(raw_lines)"))
+	#print(utils.call("slid_tendency(raw_lines)"))
 	lines = []; scale = lambda x, y, s: \
 		int(x * (1+s)/2 + y * (1-s)/2)
 	for a, b in raw_lines:

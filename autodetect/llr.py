@@ -141,7 +141,7 @@ def llr_polyscore(cnt, pts, cen, alfa=5, beta=2):
 	D = 1+(G/A)**(1/5)  # centroid
 	R = (A**4)/((B**2) * C * D)
 
-	print(R*(10**12), A, "|", B, C, D, "|", E, G)
+	#print(R*(10**12), A, "|", B, C, D, "|", E, G)
 	
 	return R
 	#                  R        E        B     A  abs(E-B)
@@ -153,7 +153,7 @@ def llr_polyscore(cnt, pts, cen, alfa=5, beta=2):
 # LAPS, SLID
 
 def LLR(img, points, lines):
-	print(utils.call("LLR(img, points, lines)"))
+	#print(utils.call("LLR(img, points, lines)"))
 	old = points
 
 	# --- otoczka
@@ -195,7 +195,7 @@ def LLR(img, points, lines):
 		if len(__points[i]) > __max:
 			__max = len(__points[i]); __points_max = __points[i]
 	if len(__points) > 0 and len(points) > 49/2: points = __points_max
-	print(X.labels_)
+	#print(X.labels_)
 	# ---
 
 	# tworzymy zewnetrzny pierscien
@@ -209,7 +209,7 @@ def LLR(img, points, lines):
 	centroid = (sum(x) / len(points), \
 			    sum(y) / len(points))
 
-	print(alfa, beta, centroid)
+	#print(alfa, beta, centroid)
 
 	#        C (x2, y2)        d=(x_1−x_0)^2+(y_1−y_0)^2, t=d_t/d
 	#      B (x1, y1)          (x_2,y_2)=(((1−t)x_0+tx_1),((1−t)y_0+ty_1))
@@ -295,7 +295,7 @@ def LLR(img, points, lines):
 		.lines(pregroup[1], color=(255,0,0)) \
 	.save("llr_pregroups")
 	
-	print("---------------------")
+	#print("---------------------")
 	for v in itertools.combinations(pregroup[0], 2):            # poziome
 		for h in itertools.combinations(pregroup[1], 2):        # pionowe
 			poly = laps_intersections([v[0], v[1], h[0], h[1]]) # przeciecia
@@ -308,14 +308,14 @@ def LLR(img, points, lines):
 
 	S = collections.OrderedDict(sorted(S.items()))              # max
 	K = next(iter(S))
-	print("key --", K)
+	#print("key --", K)
 	four_points = llr_normalize(S[K])               # score
 
 	# XXX: pomijanie warst, lub ich wybor? (jesli mamy juz okay)
 	# XXX: wycinanie pod sam koniec? (modul wylicznia ile warstw potrzebnych)
 
-	print("POINTS:", len(points))
-	print("LINES:", len(lines))
+	#print("POINTS:", len(points))
+	#print("LINES:", len(lines))
 
 	debug.image(img).points(four_points).save("llr_four_points")
 
@@ -331,7 +331,8 @@ def LLR(img, points, lines):
 	return four_points
 
 def llr_pad(four_points, img):
-	print(utils.call("llr_pad(four_points)"));pco = pyclipper.PyclipperOffset()
+	#print(utils.call("llr_pad(four_points)"))
+	pco = pyclipper.PyclipperOffset()
 	pco.AddPath(four_points, pyclipper.JT_MITER, pyclipper.ET_CLOSEDPOLYGON)
 	
 	padded = pco.Execute(60)[0]

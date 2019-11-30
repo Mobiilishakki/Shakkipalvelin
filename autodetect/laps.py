@@ -87,7 +87,7 @@ def laps_detector(img):
 ################################################################################
 
 def LAPS(img, lines, size=10):
-	print(utils.call("LAPS(img, lines)"))
+	#print(utils.call("LAPS(img, lines)"))
 
 	__points, points = laps_intersections(lines), []
 	debug.image(img).points(__points, size=3).save("laps_in_queue")
