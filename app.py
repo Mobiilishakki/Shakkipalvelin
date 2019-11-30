@@ -13,7 +13,7 @@ OUTPUT_PATH = "output.jpg"
 """ LOADING """
 
 # Load pre-trained ML model for inference
-model_file = 'pytorch_chessmodel.pth'
+model_file = 'pytorch_chessmodel_1.pth'
 # Currently only CPU is available on server
 device = torch.device('cpu')
 model = torch.load(model_file)
