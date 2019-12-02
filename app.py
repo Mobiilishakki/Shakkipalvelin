@@ -7,7 +7,7 @@ from flask import Flask, request, redirect, url_for
 
 CATEGORIES = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'empty', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'JPG', 'JPEG'])
-
+POLL = False
 
 """ LOADING """
 
@@ -99,6 +99,7 @@ def allowed_file(filename):
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
+        POLL = False
         file = request.files['file']
         if file and allowed_file(file.filename):
             img = Image.open(file)
@@ -116,6 +117,14 @@ def upload_file():
          <input type=submit value=Upload>
     </form>
     '''
+
+@app.route('/snapshot', methods=['GET', 'POST'])
+def snapshot():
+    if request.method == 'GET':
+        return POLL   
+
+    if request.method == 'POST':
+        POLL = True
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=False)
