@@ -8,6 +8,7 @@ from flask import Flask, request, redirect, url_for, jsonify
 CATEGORIES = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'empty', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'JPG', 'JPEG'])
 CURRENT_STATE = 'None'
+POLL = True
 
 """ LOADING """
 
@@ -100,9 +101,18 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+def get_poll():
+    global POLL
+    return POLL
+
+def set_poll(value):
+    global POLL
+    POLL = value
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
+        set_poll(False)
         file = request.files['file']
         if file and allowed_file(file.filename):
             img = Image.open(file)
@@ -123,5 +133,19 @@ def upload_file():
     </form>
     '''
 
+@app.route('/snapshot', methods=['GET', 'POST'])
+def snapshot():
+    if request.method == 'POST':
+       set_poll(True)
+       return "True"
+    
+    if request.method == 'GET':
+        if get_poll() == True:
+            set_poll(False)
+            return "True"
+        return "False"
+
+
 if __name__ == '__main__':
+    #app.run(host='0.0.0.0', port=80, debug=False)
     app.run(host='0.0.0.0', debug=False)
