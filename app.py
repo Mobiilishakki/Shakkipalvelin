@@ -1,12 +1,13 @@
 from PIL import Image
 import sys, math, torch
 from torchvision import transforms
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, jsonify
 
 """ CONSTANTS """
 
 CATEGORIES = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'empty', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'JPG', 'JPEG'])
+CURRENT_STATE = 'None'
 POLL = True
 
 """ LOADING """
@@ -37,7 +38,7 @@ def predict_image(img):
     return CATEGORIES[index]
 
 def split_board(img):
-    '''Split original image into 64 tiles by the 
+    '''Split original image into 64 tiles by the
     crop() function of PIL.'''
     tiles = []
     sq_len = math.floor(min(img.size[0], img.size[1]) / 8)
@@ -50,7 +51,7 @@ def split_board(img):
     return tiles
 
 def shrink_blanks(fen):
-    '''Count consecutive blanks and replaces 
+    '''Count consecutive blanks and replaces
     by their number.'''
     if '_' not in fen:
         return fen
@@ -92,6 +93,10 @@ app = Flask(__name__)
 def hello():
     return 'Chess ID. usage: /upload'
 
+@app.route('/state')
+def current_state():
+    return jsonify({'state': CURRENT_STATE})
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
@@ -115,7 +120,9 @@ def upload_file():
             result = []
             for square in squares:
                 result.append(predict_image(square))
-            return get_fen(result)
+            global CURRENT_STATE
+            CURRENT_STATE = get_fen(result)
+            return CURRENT_STATE
     return '''
     <!doctype html>
     <title>Chess ID</title>
