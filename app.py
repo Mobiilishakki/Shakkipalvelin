@@ -8,7 +8,7 @@ from flask import Flask, request, redirect, url_for, jsonify
 CATEGORIES = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'empty', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'JPG', 'JPEG'])
 CURRENT_STATE = 'None'
-POLL = True
+PLAYER = '' # Player whose camera should send a picture: 'black', 'white' or empty string
 
 """ LOADING """
 
@@ -101,21 +101,21 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-def get_poll():
-    global POLL
-    return POLL
+def get_player():
+    global PLAYER
+    return PLAYER
 
-def set_poll(value):
-    global POLL
-    POLL = value
+def set_player(value):
+    global PLAYER
+    PLAYER = value
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        set_poll(False)
+        set_player('')
         file = request.files['file']
         if file and allowed_file(file.filename):
-            img = Image.open(file)
+            img = Image.open(file) #.rotate(270)
             squares = split_board(img)
             result = []
             for square in squares:
@@ -136,14 +136,20 @@ def upload_file():
 @app.route('/snapshot', methods=['GET', 'POST'])
 def snapshot():
     if request.method == 'POST':
-       set_poll(True)
-       return "True"
+        print(request.json['player'])
+        if (request.json['player'] == 'white'):
+            print('white')
+            set_player('white')
+        elif request.json['player'] == 'black':
+            print('black')
+            set_player('black')
+        else:
+            print('wrong')
+        return(get_player())
     
     if request.method == 'GET':
-        if get_poll() == True:
-            set_poll(False)
-            return "True"
-        return "False"
+        print("poll result", get_player())
+        return get_player()
 
 
 if __name__ == '__main__':
