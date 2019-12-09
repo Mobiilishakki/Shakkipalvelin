@@ -3,5 +3,6 @@ venv/
 __pycache__/
 .vscode/
 data/
+!autodetect/data/
 .DS_Store
 *.pth

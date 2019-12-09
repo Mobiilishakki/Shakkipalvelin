@@ -1,5 +1,5 @@
 from PIL import Image
-import sys, math, torch
+import sys, math, torch, os
 from torchvision import transforms
 from flask import Flask, request, redirect, url_for, jsonify
 
@@ -7,6 +7,7 @@ from flask import Flask, request, redirect, url_for, jsonify
 
 CATEGORIES = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'empty', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'JPG', 'JPEG'])
+OUTPUT_PATH = "output.jpg"
 CURRENT_STATE = 'None'
 PLAYER = '' # Player whose camera should send a picture: 'black', 'white' or empty string
 
@@ -115,8 +116,10 @@ def upload_file():
         set_player('')
         file = request.files['file']
         if file and allowed_file(file.filename):
-            img = Image.open(file) #.rotate(270)
+            os.system("python3 ./autodetect/main.py detect --input={} --output={}".format(file.filename, OUTPUT_PATH))
+            img = Image.open(OUTPUT_PATH).rotate(270)
             squares = split_board(img)
+            os.remove(OUTPUT_PATH)
             result = []
             for square in squares:
                 result.append(predict_image(square))
