@@ -1,14 +1,15 @@
 from PIL import Image
 import sys, math, torch, os
 from torchvision import transforms
-from flask import Flask, request, redirect, url_for
+from flask import Flask, request, redirect, url_for, jsonify
 
 """ CONSTANTS """
 
 CATEGORIES = ['bb', 'bk', 'bn', 'bp', 'bq', 'br', 'empty', 'wb', 'wk', 'wn', 'wp', 'wq', 'wr']
 ALLOWED_EXTENSIONS = set(['jpg', 'jpeg', 'JPG', 'JPEG'])
 OUTPUT_PATH = "output.jpg"
-
+CURRENT_STATE = 'None'
+PLAYER = '' # Player whose camera should send a picture: 'black', 'white' or empty string
 
 """ LOADING """
 
@@ -38,7 +39,7 @@ def predict_image(img):
     return CATEGORIES[index]
 
 def split_board(img):
-    '''Split original image into 64 tiles by the 
+    '''Split original image into 64 tiles by the
     crop() function of PIL.'''
     tiles = []
     sq_len = math.floor(min(img.size[0], img.size[1]) / 8)
@@ -51,7 +52,7 @@ def split_board(img):
     return tiles
 
 def shrink_blanks(fen):
-    '''Count consecutive blanks and replaces 
+    '''Count consecutive blanks and replaces
     by their number.'''
     if '_' not in fen:
         return fen
@@ -93,23 +94,38 @@ app = Flask(__name__)
 def hello():
     return 'Chess ID. usage: /upload'
 
+@app.route('/state')
+def current_state():
+    return jsonify({'state': CURRENT_STATE})
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+def get_player():
+    global PLAYER
+    return PLAYER
+
+def set_player(value):
+    global PLAYER
+    PLAYER = value
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
+        set_player('')
         file = request.files['file']
         if file and allowed_file(file.filename):
             os.system("python3 ./autodetect/main.py detect --input={} --output={}".format(file.filename, OUTPUT_PATH))
-            img = Image.open(OUTPUT_PATH)
+            img = Image.open(OUTPUT_PATH).rotate(270)
             squares = split_board(img)
             os.remove(OUTPUT_PATH)
             result = []
             for square in squares:
                 result.append(predict_image(square))
-            return get_fen(result)
+            global CURRENT_STATE
+            CURRENT_STATE = get_fen(result)
+            return CURRENT_STATE
     return '''
     <!doctype html>
     <title>Chess ID</title>
@@ -120,5 +136,25 @@ def upload_file():
     </form>
     '''
 
+@app.route('/snapshot', methods=['GET', 'POST'])
+def snapshot():
+    if request.method == 'POST':
+        print(request.json['player'])
+        if (request.json['player'] == 'white'):
+            print('white')
+            set_player('white')
+        elif request.json['player'] == 'black':
+            print('black')
+            set_player('black')
+        else:
+            print('wrong')
+        return(get_player())
+    
+    if request.method == 'GET':
+        print("poll result", get_player())
+        return get_player()
+
+
 if __name__ == '__main__':
+    #app.run(host='0.0.0.0', port=80, debug=False)
     app.run(host='0.0.0.0', debug=False)

@@ -13,6 +13,10 @@ model = models.resnet50(pretrained=True)
 
 data_dir = '/chess'
 
+'''
+Loads the data into train and validation dataset loaders.
+Splits the data so that 80% of images go to trainloader and 20% to testloader (validation)
+'''
 def load_split_train_test(datadir, valid_size = .2):
     copy_and_rotate_images(datadir)
     train_transforms = transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor()])
@@ -72,7 +76,7 @@ for param in model.parameters():
 model.fc = nn.Sequential(nn.Linear(2048, 512),
                                  nn.ReLU(),
                                  nn.Dropout(0.2),
-                                 nn.Linear(512, 13), # Used to be "10),"
+                                 nn.Linear(512, 13),
                                  nn.LogSoftmax(dim=1))
 criterion = nn.NLLLoss()
 optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
