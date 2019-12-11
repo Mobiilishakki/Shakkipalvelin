@@ -40,3 +40,6 @@ Install dependencies:
 ```sh
 pip install -r requirements.txt
 ```
+
+
+The code for automatic board detection in the **autodetect** subdirectory is from [neural-chessboard](https://github.com/maciejczyzewski/neural-chessboard).
