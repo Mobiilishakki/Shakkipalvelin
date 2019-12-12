@@ -1,7 +1,8 @@
 from PIL import Image
-import sys, math, torch, os
+import sys, math, torch, os, cv2
 from torchvision import transforms
 from flask import Flask, request, redirect, url_for, jsonify
+import numpy as np
 
 """ CONSTANTS """
 
@@ -29,6 +30,7 @@ def predict_image(img):
     '''Take PIL image as input and return the
     pytorch NN classification.'''
     # Transform to standardize image sizes etc.
+    img.save("slaissi.jpg")
     img_tensor = test_transforms(img).float()
     img_tensor = img_tensor.unsqueeze_(0)
     input = img_tensor.to(device)
@@ -116,13 +118,31 @@ def upload_file():
         set_player('')
         file = request.files['file']
         if file and allowed_file(file.filename):
-            os.system("python3 ./autodetect/main.py detect --input={} --output={}".format(file.filename, OUTPUT_PATH))
-            img = Image.open(OUTPUT_PATH).rotate(270)
+            img = np.asarray(bytearray(file.read()))
+            img = cv2.imdecode(img, 1)
+            imgname = "saapui.jpg"
+            cv2.imwrite(imgname, img)
+
+            print(file.filename)
+            print(file)
+            #file.save(file.filename)
+            #img = Image.open(file.filename).rotate(270)
+            
+
+            #img = Image.open(file.filename)
+            os.system("python3 ./autodetect/main.py detect --input={} --output={}".format(imgname, OUTPUT_PATH))
+            img = Image.open(OUTPUT_PATH)
             squares = split_board(img)
-            os.remove(OUTPUT_PATH)
+            #os.remove(OUTPUT_PATH)
             result = []
+            i = 0
             for square in squares:
                 result.append(predict_image(square))
+                #print(square)
+                #print(imgname[:4])
+                #string = "pics/" + imgname[:4] + "_" + str(i) + ".jpg"
+                #square.save(string, "JPEG")
+                #i = i + 1
             global CURRENT_STATE
             CURRENT_STATE = get_fen(result)
             return CURRENT_STATE

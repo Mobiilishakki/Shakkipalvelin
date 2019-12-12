@@ -3,7 +3,7 @@ import utils, debug
 import scipy, cv2, pyclipper, numpy as np
 import matplotlib.path, matplotlib.pyplot as plt
 import matplotlib.path as mplPath
-import collections, itertools, random, math
+import collections, itertools, random, math, sklearn.cluster
 from copy import copy
 na = np.array
 
@@ -184,7 +184,7 @@ def LLR(img, points, lines):
 	points = llr_correctness(llr_normalize(points), img.shape) # popraw punkty
 
 	# --- clustrowanie
-	import sklearn.cluster
+	
 	__points = {}; points = llr_polysort(points); __max, __points_max = 0, []
 	alfa = math.sqrt(cv2.contourArea(na(points))/49)
 	X = sklearn.cluster.DBSCAN(eps=alfa*4).fit(points) # **(1.3)

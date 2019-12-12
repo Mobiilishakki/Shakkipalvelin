@@ -9,4 +9,5 @@ numpy
 matplotlib
 h5py
 tables
-sklearn
+scikit-learn==0.21
+opencv-python-headless
