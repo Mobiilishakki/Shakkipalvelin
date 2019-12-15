@@ -1,4 +1,6 @@
 Dockerfile
+Dockerfile.cuda
+example.jpg
 LICENSE
 README.md
 __pycache__/
