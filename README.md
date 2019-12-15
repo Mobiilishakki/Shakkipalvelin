@@ -51,6 +51,10 @@ for our prototype model:
 rnbqkbnr/pppppppp/r7/8/8/8/PPPPPPPP/RNBQKBNR
 ```
 
+## Nvidia CUDA
+
+The Dockerfile.cuda in the repository contains a template for a container with nvidia GPU passthrough. It is still in beta but has been tested on one machine with some additional manual configuration. A container built with this file should be run with the additional argument "--gpus=all" to enable the GPUs inside the container.
+
 ## Development
 
 Use the following to clone and run a development version of the server:
