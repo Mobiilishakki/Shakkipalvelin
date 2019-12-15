@@ -41,14 +41,14 @@ __Important note:__ at least when using the UFW firewall on Linux, Docker automa
 You can try out the container's recognition abilities by sending it a JPG image of a chessboard:
 
 ```sh
-curl -F 'file=@./start1.jpg' http://[url-or-IP-to-server]/upload
+curl -F 'file=@./example.jpg' http://[url-or-IP-to-server]/upload
 ```
 
 An example image is included in the repository files. The output for the example file is close to perfect
 for our prototype model:
 
 ```sh
-rnbqkbnr/ppppppbp/8/8/8/8/PPPPPPPP/RKBQKBNR
+rnbqkbnr/pppppppp/r7/8/8/8/PPPPPPPP/RNBQKBNR
 ```
 
 ## Development
